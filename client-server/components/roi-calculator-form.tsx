@@ -23,6 +23,7 @@ function CheckoutForm() {
   const [roiPercent, setRoiPercent] = useState<string | null>(null)
   const [breakEvenMonths, setBreakEvenMonths] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
+  const APIURL = "https://8000-ephraimx-staticroicalcu-ar07kphbms7.ws-eu120.gitpod.io/api"
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -51,7 +52,7 @@ function CheckoutForm() {
 
     // --- Call API for ROI Calculation ---
     try {
-      const roiResponse = await fetch("/api/calculate-roi", {
+      const roiResponse = await fetch(`${APIURL}/calculate-roi`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

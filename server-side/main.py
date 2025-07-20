@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Union
 import uvicorn
@@ -8,6 +9,23 @@ app = FastAPI(
     title="ROI Calculator Backend",
     description="API for calculating ROI and recording payments."
 )
+
+
+# CORS configuration
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # or the port your frontend uses
+    "https://3000-ephraimx-staticroicalcu-ar07kphbms7.ws-eu120.gitpod.io"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Adjust based on your deployment
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Pydantic models for request bodies
 class RoiCalculationRequest(BaseModel):
@@ -23,7 +41,7 @@ class PaymentRecordRequest(BaseModel):
     breakEvenMonths: str
     # In a real app, you'd also include Stripe payment intent ID, etc.
 
-@app.post("/calculate-roi")
+@app.post("/api/calculate-roi")
 async def calculate_roi(request: RoiCalculationRequest):
     """
     Calculates Return on Investment (ROI) and break-even time.
@@ -60,7 +78,7 @@ async def calculate_roi(request: RoiCalculationRequest):
 
     return {"roiPercent": roi_percent, "breakEvenMonths": break_even_months}
 
-@app.post("/record-payment")
+@app.post("/api/record-payment")
 async def record_payment(request: PaymentRecordRequest):
     """
     Records successful payment details into a database (simulated).
