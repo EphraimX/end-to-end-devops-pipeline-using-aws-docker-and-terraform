@@ -189,7 +189,7 @@ function CheckoutForm() {
               className="mt-1 block w-full px-4 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-neutral-500 focus:border-neutral-500 sm:text-sm transition duration-200 ease-in-out focus:outline-none"
             />
           </div>
-          <div className="flex items-center space-x-3 mt-4">
+          {/* <div className="flex items-center space-x-3 mt-4">
             <Checkbox
               id="iced-latte-summary"
               checked={includePdf}
@@ -207,7 +207,7 @@ function CheckoutForm() {
             >
               <PaymentElement />
             </div>
-          )}
+          )} */}
 
           <Button
             type="submit"
@@ -215,7 +215,7 @@ function CheckoutForm() {
             className="w-full py-3 text-lg font-semibold bg-neutral-800 hover:bg-neutral-900 text-white rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={isLoading || !stripe || (includePdf && !elements)}
           >
-            {isLoading ? "Processing..." : "Calculate & Pay"}
+            {isLoading ? "Processing..." : "Calculate"}
           </Button>
 
           {message && (
