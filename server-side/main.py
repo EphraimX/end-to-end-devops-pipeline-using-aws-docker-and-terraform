@@ -39,7 +39,7 @@ class PaymentRecordRequest(BaseModel):
     timeHorizon: int
     roiPercent: str
     breakEvenMonths: str
-    # In a real app, you'd also include Stripe payment intent ID, etc.
+    date: str
 
 @app.post("/api/calculate-roi")
 async def calculate_roi(request: RoiCalculationRequest):
@@ -78,7 +78,8 @@ async def calculate_roi(request: RoiCalculationRequest):
 
     return {"roiPercent": roi_percent, "breakEvenMonths": break_even_months}
 
-@app.post("/api/record-payment")
+
+@app.post("/api/recordEntry")
 async def record_payment(request: PaymentRecordRequest):
     """
     Records successful payment details into a database (simulated).
@@ -103,7 +104,3 @@ async def record_payment(request: PaymentRecordRequest):
     #     session.commit()
 
     return {"success": True, "message": "Payment record simulated successfully."}
-
-# To run the application locally:
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
