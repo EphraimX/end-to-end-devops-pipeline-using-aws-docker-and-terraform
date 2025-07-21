@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import 'dotenv/config'
 
 // This component will be wrapped by <Elements>
 function CheckoutForm() {
@@ -20,7 +21,7 @@ function CheckoutForm() {
   const [breakEvenMonths, setBreakEvenMonths] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [calculationSuccessful, setCalculationSuccessful] = useState(false)
-  const APIURL = "https://8000-ephraimx-staticroicalcu-ar07kphbms7.ws-eu120.gitpod.io/api"
+  const APIURL = process.env.APIURL
 
   const handleSubmit = async (e: FormEvent) => {
     
