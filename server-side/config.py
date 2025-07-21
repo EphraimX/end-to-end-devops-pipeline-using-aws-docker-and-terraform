@@ -32,7 +32,7 @@ class Settings:
     DB_POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", 30))
     DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", 3600))
     
-    
+
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = int(os.getenv("PORT", 8000))
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"

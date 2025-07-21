@@ -20,8 +20,7 @@ function CheckoutForm() {
   const [roiPercent, setRoiPercent] = useState<string | null>(null)
   const [breakEvenMonths, setBreakEvenMonths] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
-  const [calculationSuccessful, setCalculationSuccessful] = useState(false)
-  const APIURL = process.env.APIURL
+  const APIURL = process.env.NEXT_PUBLIC_APIURL
 
   const handleSubmit = async (e: FormEvent) => {
     
@@ -63,10 +62,7 @@ function CheckoutForm() {
 
       setRoiPercent(roiData.roiPercent)
       setBreakEvenMonths(roiData.breakEvenMonths)
-      setCalculationSuccessful(true)
-      setShowResults(true)
       
-
       try {
         const recordResponse = await fetch(`${APIURL}/recordEntry`, {
           method: "POST",
@@ -94,45 +90,13 @@ function CheckoutForm() {
       }
 
       setMessage("Calculation complete!")
+      setShowResults(true)
       
     } catch (error) {
       console.error("Error fetching ROI calculation:", error)
       setMessage("An error occurred during ROI calculation.")
       setIsLoading(false)
       return
-    }
-
-
-    if (calculationSuccessful) {
-
-      try {
-        const recordResponse = await fetch(`${APIURL}/recordEntry`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            cost: currentCost,
-            revenue: currentRevenue,
-            timeHorizon: currentTimeHorizon,
-            roiPercent: roiPercent, 
-            breakEvenMonths: breakEvenMonths, 
-            date: new Date().toISOString(),
-          }),
-        })
-
-        const recordData = await recordResponse.json()
-        if (!recordResponse.ok) {
-          console.error("Failed to record payment:", recordData.error)
-          // Optionally update message to user about record failure, but payment was successful
-        } else {
-          console.log("Payment record API response:", recordData.message)
-        }
-      } catch (recordError) {
-        console.error("Error calling record payment API:", recordError)
-      }
-    } else {
-      setMessage("Calculation complete!")
     }
 
     setIsLoading(false)

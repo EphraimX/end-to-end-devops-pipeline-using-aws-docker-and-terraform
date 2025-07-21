@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
 from models import Base, PaymentRecord
 from config import settings
 from typing import Union
@@ -42,10 +43,13 @@ class RoiCalculationRequest(BaseModel):
 class PaymentRecordRequest(BaseModel):
     cost: float
     revenue: float
-    timeHorizon: int
-    roiPercent: str
-    breakEvenMonths: str
+    time_horizon: int = Field(..., alias="timeHorizon")
+    roi_percent: str = Field(..., alias="roiPercent")
+    break_even_months: str = Field(..., alias="breakEvenMonths")
     date: str
+
+    class Config:
+        validate_by_name = True 
 
 
 @app.post("/api/calculate-roi")
@@ -102,9 +106,9 @@ def record_payment(request: PaymentRecordRequest, db: Session = Depends(get_db))
         new_record = PaymentRecord(
             cost=request.cost,
             revenue=request.revenue,
-            time_horizon=request.timeHorizon,
-            roi_percent=request.roiPercent,
-            break_even_months=request.breakEvenMonths,
+            time_horizon=request.time_horizon,
+            roi_percent=request.roi_percent,
+            break_even_months=request.break_even_months,
             date=request.date
         )
         db.add(new_record)
