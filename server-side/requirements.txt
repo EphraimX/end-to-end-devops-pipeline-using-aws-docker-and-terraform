@@ -1,3 +1,6 @@
 fastapi
 pydantic
 uvicorn
+alembic
+python-dotenv
+psycopg2

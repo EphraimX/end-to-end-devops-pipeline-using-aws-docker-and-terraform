@@ -1,8 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from models import Base, PaymentRecord
+from config import settings
 from typing import Union
+from db import SessionLocal, engine
 import uvicorn
+
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -11,20 +15,21 @@ app = FastAPI(
 )
 
 
-# CORS configuration
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  # or the port your frontend uses
-    "https://3000-ephraimx-staticroicalcu-ar07kphbms7.ws-eu120.gitpod.io"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Adjust based on your deployment
+    allow_origins=settings.ALLOWED_ORIGINS,  # Adjust based on your deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 # Pydantic models for request bodies
@@ -33,6 +38,7 @@ class RoiCalculationRequest(BaseModel):
     revenue: float
     timeHorizon: int
 
+
 class PaymentRecordRequest(BaseModel):
     cost: float
     revenue: float
@@ -40,6 +46,7 @@ class PaymentRecordRequest(BaseModel):
     roiPercent: str
     breakEvenMonths: str
     date: str
+
 
 @app.post("/api/calculate-roi")
 async def calculate_roi(request: RoiCalculationRequest):
@@ -79,28 +86,32 @@ async def calculate_roi(request: RoiCalculationRequest):
     return {"roiPercent": roi_percent, "breakEvenMonths": break_even_months}
 
 
+# DB Healtch Check
+@app.get("/dbHealth")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute("SELECT 1")
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+
 @app.post("/api/recordEntry")
-async def record_payment(request: PaymentRecordRequest):
-    """
-    Records successful payment details into a database (simulated).
-    """
-    # In a real application, you would insert this data into your database.
-    # For example, using SQLAlchemy, Tortoise ORM, or a direct database client.
-    print(f"Simulating database insertion for successful payment: {request.dict()}")
+def record_payment(request: PaymentRecordRequest, db: Session = Depends(get_db)):
+    try:
+        new_record = PaymentRecord(
+            cost=request.cost,
+            revenue=request.revenue,
+            time_horizon=request.timeHorizon,
+            roi_percent=request.roiPercent,
+            break_even_months=request.breakEvenMonths,
+            date=request.date
+        )
+        db.add(new_record)
+        db.commit()
+        db.refresh(new_record)
 
-    # Example of what you might do with a database client:
-    # from your_database_module import db_session, PaymentRecord
-    # with db_session() as session:
-    #     new_record = PaymentRecord(
-    #         cost=request.cost,
-    #         revenue=request.revenue,
-    #         time_horizon=request.timeHorizon,
-    #         roi_percent=request.roiPercent,
-    #         break_even_months=request.breakEvenMonths,
-    #         payment_status="completed",
-    #         # ... other payment details from Stripe webhook or client confirmation
-    #     )
-    #     session.add(new_record)
-    #     session.commit()
-
-    return {"success": True, "message": "Payment record simulated successfully."}
+        return {"success": True, "message": "Payment record saved to RDS."}
+    except Exception as e:
+        print("DB error:", e)
+        raise HTTPException(status_code=500, detail="Failed to save payment record.")

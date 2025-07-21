@@ -4,6 +4,7 @@ from datetime import datetime
 
 Base = declarative_base()
 
+
 class PaymentRecord(Base):
     __tablename__ = "payment_records"
 
@@ -13,3 +14,4 @@ class PaymentRecord(Base):
     time_horizon = Column(Integer, nullable=False)
     roi_percent = Column(String, nullable=False)
     break_even_months = Column(String, nullable=False)
+    date = Column(DateTime, nullable=False)
