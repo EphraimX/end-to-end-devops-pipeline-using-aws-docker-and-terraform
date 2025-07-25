@@ -52,6 +52,11 @@ class PaymentRecordRequest(BaseModel):
         validate_by_name = True 
 
 
+@app.get("/api/healthcheck")
+async def health_check():
+    return {"message": "Working Lovelies"}
+
+
 @app.post("/api/calculate-roi")
 async def calculate_roi(request: RoiCalculationRequest):
     """
