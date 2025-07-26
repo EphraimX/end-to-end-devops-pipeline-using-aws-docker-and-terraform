@@ -12,6 +12,10 @@ RUN --mount=type=cache,target=/usr/src/app/.npm \
 
 COPY . /usr/src/app/
 
+ARG NEXT_PUBLIC_APIURL
+
+ENV NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL
+
 RUN npm run build
 
 # Deployable Image

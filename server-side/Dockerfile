@@ -49,13 +49,19 @@ ENV PATH="/venv/bin:$PATH"
 # Copy application
 COPY . /app/
 
+# Make scripts executable
+RUN chmod +x /app/scripts/entrypoint.sh
+RUN chmod +x /app/scripts/healthcheck.sh
+
 # Set ownership
 RUN chown -R fastapi:fastapi /app
+
 USER fastapi
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/healthcheck || exit 1
+    CMD /app/scripts/healthcheck.sh
 
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]

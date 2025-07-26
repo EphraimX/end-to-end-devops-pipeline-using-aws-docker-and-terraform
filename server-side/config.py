@@ -43,10 +43,11 @@ class Settings:
     
 
     # CORS Settings
+    CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:3000")
     ALLOWED_ORIGINS = [
         "http://localhost",
         "http://localhost:3000",  # or the port your frontend uses
-        "https://3000-ephraimx-staticroicalcu-ar07kphbms7.ws-eu120.gitpod.io"
+        CLIENT_URL
     ]
 
     
