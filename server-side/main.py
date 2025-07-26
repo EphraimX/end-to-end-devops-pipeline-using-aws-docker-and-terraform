@@ -96,7 +96,7 @@ async def calculate_roi(request: RoiCalculationRequest):
 
 
 # DB Healtch Check
-@app.get("/dbHealth")
+@app.get("/api/dbHealth")
 def health_check(db: Session = Depends(get_db)):
     try:
         db.execute("SELECT 1")
