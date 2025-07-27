@@ -1,13 +1,18 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from pydantic import BaseModel, Field
 from models import Base, PaymentRecord
 from config import settings
 from typing import Union
 from db import SessionLocal, engine
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -15,6 +20,7 @@ app = FastAPI(
     description="API for calculating ROI and recording payments."
 )
 
+Instrumentator().instrument(app).expose(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,9 +105,10 @@ async def calculate_roi(request: RoiCalculationRequest):
 @app.get("/api/dbHealth")
 def health_check(db: Session = Depends(get_db)):
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
+        logging.exception(e)
         raise HTTPException(status_code=500, detail="Database connection failed")
 
 
@@ -122,5 +129,5 @@ def record_payment(request: PaymentRecordRequest, db: Session = Depends(get_db))
 
         return {"success": True, "message": "Payment record saved to RDS."}
     except Exception as e:
-        print("DB error:", e)
+        logging.exception(e)
         raise HTTPException(status_code=500, detail="Failed to save payment record.")

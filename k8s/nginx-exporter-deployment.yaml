@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-exporter
+  namespace: roi-calculator
+  labels:
+    environment: production
+    tier: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-exporter
+  template:
+    metadata:
+      labels:
+        app: nginx-exporter
+    spec:
+      containers:
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter
+          args:
+            - "--nginx.scrape-uri=http://nginx-app/stub_status"
+          ports:
+            - containerPort: 9113
