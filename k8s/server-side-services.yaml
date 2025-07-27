@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: roi-calculator-server-side
+  labels:
+    environment: production
+    tier: server
+spec:
+  selector:
+    environment: production
+    tier: server
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    nodePort: 30010

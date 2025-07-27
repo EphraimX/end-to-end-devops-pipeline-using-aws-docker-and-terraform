@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roi-calculator-server-side
+  namespace: roi-calculator
+  labels:
+    environment: production
+    tier: server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: server
+  template:
+    metadata:
+      labels:
+        environment: production
+        tier: server
+    spec:
+      containers:
+      - name: roi-calculator-backend
+        image: ephraimx57/roi-calculator-backend
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: DB_PASSWORD   
+        - name: DB_TYPE
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: DB_TYPE
+        - name: CLIENT_URL
+          valueFrom:
+            secretKeyRef:
+              name: roi-calculator-secrets
+              key: CLIENT_URL
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"

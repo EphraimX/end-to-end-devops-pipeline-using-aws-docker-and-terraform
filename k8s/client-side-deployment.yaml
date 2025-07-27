@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+namespace: roi-calculator
+metadata:
+  name: roi-calculator-client-side
+  labels:
+    environment: production
+    tier: client
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: client
+  template:
+    metadata:
+      labels:
+        environment: production
+        tier: client
+    spec:
+      containers:
+      - name: roi-calculator-frontend
+        image: ephraimx57/roi-calculator-frontend
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
