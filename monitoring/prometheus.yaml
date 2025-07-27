@@ -1,0 +1,20 @@
+---
+global:
+  scrape_interval: 15s  
+
+scrape_configs:
+  # Monitor Prometheus
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Monitor EC2 Instances
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']
+
+  # Monitor All Docker Containers
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8081']
