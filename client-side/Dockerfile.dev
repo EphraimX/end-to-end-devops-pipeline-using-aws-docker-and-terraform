@@ -1,5 +1,5 @@
-# ---------- Builder + Runtime ----------
-FROM node:21.5-bullseye-slim
+# ---------- Builder Stage ----------
+FROM node:21.5-bullseye-slim AS builder
 
 WORKDIR /usr/src/app
 
@@ -7,21 +7,40 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install --force
 
-# Install pm2 globally
-RUN npm install -g pm2
-
-# Copy rest of the application
+# Copy application code
 COPY . .
 
-# Accept environment variable for public API URL
+# Build-time environment variable
 ARG NEXT_PUBLIC_APIURL
 ENV NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL
 
-# Build the Next.js app (server-side)
+# Build the app
 RUN npm run build
 
-# Expose Next.js default port
+# ---------- Production Stage ----------
+FROM node:21.5-bullseye-slim AS runner
+
+WORKDIR /usr/src/app
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev --force
+
+# Install PM2 globally
+RUN npm install -g pm2
+
+# Copy built app from builder stage
+COPY --from=builder /usr/src/app/.next ./.next
+COPY --from=builder /usr/src/app/public ./public
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package.json ./package.json
+COPY --from=builder /usr/src/app/next.config.mjs ./next.config.mjs
+
+# Expose app port
 EXPOSE 3000
 
-# Use PM2 to run Next.js
+# Set runtime env (can override with --env at runtime)
+ENV NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL
+
+# Start Next.js using PM2
 CMD ["pm2-runtime", "start", "npm", "--", "start"]
