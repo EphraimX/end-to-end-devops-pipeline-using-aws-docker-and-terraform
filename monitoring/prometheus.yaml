@@ -22,8 +22,8 @@ scrape_configs:
   # Monitoring NGINX - Client Server
   - job_name: 'roi-calculator-client-side'
     static_configs:
-      - targets: ['10.124.32.32:30913'] # Replace your EC2 IP
+      - targets: ['10.124.32.32:80'] # Replace your EC2 IP
 
   - job_name: 'roi-calculator-backend-side'
     static_configs:
-      - targets: ['10.124.32.32:30010'] 
+      - targets: ['10.124.32.32:8000'] 
