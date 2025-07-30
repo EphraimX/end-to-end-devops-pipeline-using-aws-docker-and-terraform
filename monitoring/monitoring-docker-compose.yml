@@ -12,11 +12,11 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - "/etc/prometheus:/config"
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
       - "prometheus-data:/prometheus"
     restart: unless-stopped
     command:
-      - "--config.file=/config/prometheus.yml"
+      - "--config.file=/etc/prometheus/prometheus.yml"
   
 
   grafana:
