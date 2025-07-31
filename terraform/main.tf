@@ -1,3 +1,7 @@
+#################################################
+## AWS VPC and Subnets
+#################################################
+
 resource "aws_vpc" "roi_calculator_vpc" {
   cidr_block = "10.10.0.0/16"
   tags = var.tags
@@ -32,6 +36,9 @@ resource "aws_subnet" "roi_calculator_private_subnet_two" {
 }
 
 
+#################################################
+## Internet Gateway and Route Tables
+#################################################
 resource "aws_internet_gateway" "roi_calculator_igw" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
   tags = var.tags
@@ -68,6 +75,9 @@ resource "aws_route_table_association" "roi_calculator_route_table_association_p
 }
 
 
+#################################################
+## Bastion Host Security Group
+#################################################
 resource "aws_security_group" "roi_calculator_bastion_host_sg" {
   name = "roi-calculator-bastion-host-sg"
   vpc_id = aws_vpc.roi_calculator_vpc.id
@@ -101,6 +111,9 @@ resource "aws_vpc_security_group_egress_rule" "bastion_host_allow_all_traffic_ip
 }
 
 
+#################################################
+## Production Host Security Group
+#################################################
 resource "aws_security_group" "roi_calculator_production_host_sg" {
   name = "roi-calculator-production-host-sg"
   vpc_id = aws_vpc.roi_calculator_vpc.id
@@ -195,6 +208,9 @@ resource "aws_vpc_security_group_egress_rule" "production_host_allow_all_traffic
 }
 
 
+#################################################
+## Application Load Balancer Security Group
+#################################################
 resource "aws_security_group" "roi_calculator_alb_sg" {
   name = "roi-calculator-alb-sg"
   vpc_id = aws_vpc.roi_calculator_vpc.id
@@ -229,7 +245,15 @@ resource "aws_vpc_security_group_egress_rule" "alb_allow_all_traffic_ipv4" {
 }
 
 
+#################################################
+## Bastion Host 
+#################################################
+
+
 resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
+  launch_template {
+    name = "roi-calculator-bastion-host-public-subnet-one"
+  }
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
@@ -242,6 +266,88 @@ resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
 }
 
 
+resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_two" {
+  launch_template {
+    name = "roi-calculator-bastion-host-public-subnet-two"
+  }
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
+  subnet_id = aws_subnet.roi_calculator_public_subnet_two.id
+  key_name = "rayda-application"
+  associate_public_ip_address = true
+  private_ip = true
+  user_data = file("scripts/bastion-host.sh")
+  tags = var.tags
+}
+
+
+#################################################
+## Production Host
+#################################################
+
+locals {
+  next_public_api_url_private_subnet_one = "http://${output.production_host_ip_private_subnet_one}:8000/api"
+}
+
+
+resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_one" {
+  launch_template {
+    name = "roi-calculator-production-host-private-subnet-one"
+  }
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
+  subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
+  key_name = "rayda-application"
+  associate_public_ip_address = true
+  private_ip = true
+  user_data = templatefile("${path.module}/scripts/production-host.sh", {
+    next_public_apiurl = locals.next_public_api_url_private_subnet_one
+    db_host            = output.aws_rds_address
+    db_port            = var.DB_PORT
+    db_name            = var.DB_NAME
+    db_user            = var.DB_USER
+    db_password        = var.DB_PASSWORD
+    db_type            = var.DB_TYPE
+    client_url         = var.CLIENT_URL
+  })
+  tags = var.tags
+}
+
+
+locals {
+  next_public_api_url_private_subnet_two = "http://${output.production_host_ip_private_subnet_two}:8000/api"
+}
+
+
+resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_two" {
+  launch_template {
+    name = "roi-calculator-production-host-private-subnet-two"
+  }
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
+  subnet_id = aws_subnet.roi_calculator_private_subnet_two.id
+  key_name = "rayda-application"
+  associate_public_ip_address = true
+  private_ip = true
+  user_data = templatefile("${path.module}/scripts/production-host.sh", {
+    next_public_apiurl = locals.next_public_api_url_private_subnet_two
+    db_host            = output.aws_rds_address
+    db_port            = var.DB_PORT
+    db_name            = var.DB_NAME
+    db_user            = var.DB_USER
+    db_password        = var.DB_PASSWORD
+    db_type            = var.DB_TYPE
+    client_url         = var.CLIENT_URL
+  })
+  tags = var.tags
+}
+
+#################################################
+## AWS RDS
+#################################################
 resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
   name       = "roi-calculator-rds-db-subnet-group"
   subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
@@ -288,6 +394,9 @@ resource "aws_db_instance" "roi_calculator" {
 }
 
 
+#################################################
+## Application Load Balancer
+#################################################
 resource "aws_lb" "roi_calculator_aws_lb" {
   name               = "roi-calculator-aws-lb"
   internal           = false

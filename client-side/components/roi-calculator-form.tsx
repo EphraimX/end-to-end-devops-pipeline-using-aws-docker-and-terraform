@@ -20,7 +20,7 @@ function CheckoutForm() {
   const [roiPercent, setRoiPercent] = useState<string | null>(null)
   const [breakEvenMonths, setBreakEvenMonths] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
-  const APIURL = process.env.NEXT_PUBLIC_APIURL
+  const APIURL = process.env.NEXT_PUBLIC_APIURL || "http://localhost:8000/api"
 
   const handleSubmit = async (e: FormEvent) => {
     
