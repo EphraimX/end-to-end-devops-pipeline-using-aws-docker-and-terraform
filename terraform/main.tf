@@ -178,19 +178,13 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_node_exporter_sg_
 }
 
 
-resource "aws_api_gateway_rest_api" "roi_calculator_api_gateway" {
-  name= "roi-calculator-api-gateway"
-  description = "Example API Gateway"
-}
-resource "aws_api_gateway_resource" "example_resource" {
-  rest_api_id = aws_api_gateway_rest_api.roi_calculator_api_gateway.id
-  parent_id = aws_api_gateway_rest_api.roi_calculator_api_gateway.root_resource_id
-  path_part = "example"
-}
 
 
-locals {
-  my_ip_cidr = "${chomp(tostring(data.http.my_ip.response_body))}/32"
+
+resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
+  name       = "roi-calculator-rds-db-subnet-group"
+  subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
+  tags = var.tags
 }
 
 resource "aws_security_group" "rds_sg" {
@@ -203,29 +197,30 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [local.my_ip_cidr]
+    cidr_blocks = [aws_vpc.roi_calculator_vpc.cidr_block]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [aws_vpc.roi_calculator_vpc.cidr_block]
   }
 }
 
 
 resource "aws_db_instance" "roi_calculator" {
-  identifier = "roi-calculator"
+  identifier = var.DB_IDENTIFIER
   allocated_storage = 5
-  db_name = "roi_calculator"
-  engine = "postgres"
+  db_name = var.DB_NAME
+  engine = var.DB_ENGINE
   engine_version = "17.5"
-  instance_class = "db.t3.micro"
-  username = "foo"
-  password = "foogazzi"
+  instance_class = var.DB_INSTANCE_CLASS
+  username = var.DB_USER
+  password = var.DB_PASSWORD
   skip_final_snapshot = true
-  port = 5432
-  publicly_accessible = true
+  port = var.DB_PORT
+  publicly_accessible = false
+  db_subnet_group_name = aws_db_subnet_group.roi_calculator_rds_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
 }
