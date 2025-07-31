@@ -11,6 +11,7 @@ resource "aws_vpc" "roi_calculator_vpc" {
 resource "aws_subnet" "roi_calculator_public_subnet_one" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
   cidr_block = "10.10.10.0/24"
+  availability_zone = "us-east-2a"
   tags = var.tags
 }
 
@@ -18,6 +19,7 @@ resource "aws_subnet" "roi_calculator_public_subnet_one" {
 resource "aws_subnet" "roi_calculator_public_subnet_two" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
   cidr_block = "10.10.20.0/24"
+  availability_zone = "us-east-2b"
   tags = var.tags
 }
 
@@ -25,6 +27,7 @@ resource "aws_subnet" "roi_calculator_public_subnet_two" {
 resource "aws_subnet" "roi_calculator_private_subnet_one" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
   cidr_block = "10.10.30.0/24"
+  availability_zone = "us-east-2a"
   tags = var.tags
 }
 
@@ -32,6 +35,7 @@ resource "aws_subnet" "roi_calculator_private_subnet_one" {
 resource "aws_subnet" "roi_calculator_private_subnet_two" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
   cidr_block = "10.10.40.0/24"
+  availability_zone = "us-east-2b"
   tags = var.tags
 }
 
@@ -47,10 +51,10 @@ resource "aws_internet_gateway" "roi_calculator_igw" {
 }
 
 
-resource "aws_internet_gateway_attachment" "roi_calculator_igw_attachment" {
-  internet_gateway_id = aws_internet_gateway.roi_calculator_igw.id
-  vpc_id = aws_vpc.roi_calculator_vpc.id
-}
+# resource "aws_internet_gateway_attachment" "roi_calculator_igw_attachment" {
+#   internet_gateway_id = aws_internet_gateway.roi_calculator_igw.id
+#   vpc_id = aws_vpc.roi_calculator_vpc.id
+# }
 
 
 resource "aws_route_table" "roi_calculator_route_table" {
