@@ -21,3 +21,7 @@ override.tf.json
 # Terraform CLI configuration files
 .terraformrc
 terraform.rc
+
+# AWS
+aws/
+awscliv2.zip

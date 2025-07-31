@@ -1,7 +1,23 @@
 #!/bin/bash
 
+sudo apt update
+sudo apt install -y unzip curl
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Step 1: Request a metadata session token (valid for 6 hours)
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+# Step 2: Use that token to securely access instance metadata
+MY_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/local-ipv4)
+
 # Set environment variables
-export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
+# export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
+export NEXT_PUBLIC_APIURL="http://${MY_IP}:8000/api"
 export DB_HOST="__db_host__"
 export DB_PORT="__db_port__"
 export DB_NAME="__db_name__"
@@ -10,7 +26,7 @@ export DB_PASSWORD="__db_password__"
 export DB_TYPE="__db_type__"
 export CLIENT_URL="__client_url__"
 
-echo "NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL"
+echo "NEXT_PUBLIC_APIURL=http://${MY_IP}:8000/api" >> /etc/environment
 echo "DB_HOST=$DB_HOST"
 echo "DB_PORT=$DB_PORT"
 echo "DB_NAME=$DB_NAME"

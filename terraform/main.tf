@@ -259,32 +259,24 @@ resource "aws_vpc_security_group_egress_rule" "alb_allow_all_traffic_ipv4" {
 
 
 resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
-  launch_template {
-    name = "roi-calculator-bastion-host-public-subnet-one"
-  }
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_public_subnet_one.id
   key_name = "rayda-application"
   associate_public_ip_address = true
-  private_ip = true
   user_data = file("scripts/bastion-host.sh")
   tags = var.tags
 }
 
 
 resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_two" {
-  launch_template {
-    name = "roi-calculator-bastion-host-public-subnet-two"
-  }
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_public_subnet_two.id
   key_name = "rayda-application"
   associate_public_ip_address = true
-  private_ip = true
   user_data = file("scripts/bastion-host.sh")
   tags = var.tags
 }
@@ -295,61 +287,43 @@ resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_two" {
 #################################################
 
 
-locals {
-  next_public_api_url_private_subnet_one = "http://${output.production_host_ip_private_subnet_one}:8000/api"
-}
-
-
 resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_one" {
-  launch_template {
-    name = "roi-calculator-production-host-private-subnet-one"
-  }
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
   key_name = "rayda-application"
   associate_public_ip_address = true
-  private_ip = true
   user_data = templatefile("${path.module}/scripts/production-host.sh", {
-    next_public_apiurl = locals.next_public_api_url_private_subnet_one
-    db_host            = output.aws_rds_address
+    db_host            = aws_db_instance.roi_calculator.address
     db_port            = var.DB_PORT
     db_name            = var.DB_NAME
     db_user            = var.DB_USER
     db_password        = var.DB_PASSWORD
     db_type            = var.DB_TYPE
     client_url         = var.CLIENT_URL
+    MY_IP              = "127.0.0.1"
   })
   tags = var.tags
 }
 
 
-locals {
-  next_public_api_url_private_subnet_two = "http://${output.production_host_ip_private_subnet_two}:8000/api"
-}
-
-
 resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_two" {
-  launch_template {
-    name = "roi-calculator-production-host-private-subnet-two"
-  }
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_two.id
   key_name = "rayda-application"
   associate_public_ip_address = true
-  private_ip = true
   user_data = templatefile("${path.module}/scripts/production-host.sh", {
-    next_public_apiurl = locals.next_public_api_url_private_subnet_two
-    db_host            = output.aws_rds_address
+    db_host            = aws_db_instance.roi_calculator.address
     db_port            = var.DB_PORT
     db_name            = var.DB_NAME
     db_user            = var.DB_USER
     db_password        = var.DB_PASSWORD
     db_type            = var.DB_TYPE
     client_url         = var.CLIENT_URL
+    MY_IP              = "127.0.0.1"
   })
   tags = var.tags
 }
@@ -369,8 +343,7 @@ resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
 resource "aws_security_group" "rds_sg" {
   name        = "rds-sg"
   description = "Allow Postgres inbound traffic"
-  vpc_id      = data.aws_vpc.default.id  # Replace with your VPC ID
-
+  vpc_id      = aws_vpc.roi_calculator_vpc.id
   ingress {
     description = "Allow Postgres from my IP"
     from_port   = 5432
@@ -416,16 +389,23 @@ resource "aws_lb" "roi_calculator_aws_lb" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.roi_calculator_alb_sg.id]
   subnets            = [aws_subnet.roi_calculator_public_subnet_one.id, aws_subnet.roi_calculator_public_subnet_two.id]
-
   tags = var.tags
 }
 
 
-resource "aws_lb_target_group" "roi_calculator_aws_lb_target_group_private_subnet_one" {
-  name     = "roi-calculator-aws-lb-target-group-private-subnet-one"
+resource "aws_lb_target_group" "roi_calculator_aws_lb_target_group" {
+  name     = "roi-calc-aws-lb-tg-prisub-one"
   port     = 80
   protocol = "HTTP"
   target_type = "instance"
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 30
+  }
   vpc_id   = aws_vpc.roi_calculator_vpc.id
 }
 
@@ -438,42 +418,20 @@ resource "aws_lb_listener" "roi_calculator_alb_sg_listener_private_subnet_one" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group_private_subnet_one.arn
+    target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group.arn
   }
 }
 
 
-resource "aws_lb_target_group_attachment" "roi_calculator_aws_lb_target_group_attachment_private_subnet_two" {
-  target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group_private_subnet_two.arn
+resource "aws_lb_target_group_attachment" "roi_calculator_aws_lb_target_group_attachment_private_subnet_one" {
+  target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group.arn
   target_id        = aws_instance.roi_calculator_production_host_ec2_private_subnet_two.id
   port             = 80
 }
 
 
-resource "aws_lb_target_group" "roi_calculator_aws_lb_target_group_private_subnet_two" {
-  name     = "roi-calculator-aws-lb-target-group-private-subnet-two"
-  port     = 80
-  protocol = "HTTP"
-  target_type = "instance"
-  vpc_id   = aws_vpc.roi_calculator_vpc.id
-}
-
-
-resource "aws_lb_listener" "roi_calculator_alb_sg_listener_private_subnet_two" {
-
-  load_balancer_arn = aws_lb.roi_calculator_aws_lb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group_private_subnet_two.arn
-  }
-}
-
-
 resource "aws_lb_target_group_attachment" "roi_calculator_aws_lb_target_group_attachment_private_subnet_two" {
-  target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group_private_subnet_two.arn
+  target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group.arn
   target_id        = aws_instance.roi_calculator_production_host_ec2_private_subnet_two.id
   port             = 80
 }

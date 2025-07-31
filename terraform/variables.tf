@@ -6,23 +6,30 @@ variable "aws_region" {
 
 variable "tags" {
   type = object({
-    name = "ROI Calculator Terraform"
-    environment = "Production"
-    developer = "EphraimX"
-    teamm = "Crisis Management Team"
+    name = string
+    environment = string
+    developer = string
+    team = string
   })
+
+  default = {
+    name = "EphraimX"
+    developer = "TheJackalX"
+    environment = "Production"
+    team = "Boogey Team"
+  }
 }
 
 
-variable "DB_HOST" {
-  type = string
-  sensitive = true
-}
+# variable "DB_HOST" {
+#   type = string
+#   sensitive = true
+# }
 
 
 variable "DB_PORT" {
   type = number
-  default = 5432
+  sensitive = true
 }
 
 
@@ -68,10 +75,10 @@ variable "DB_TYPE" {
 }
 
 
-variable "NEXT_PUBLIC_APIURL" {
-  type = string
-  sensitive = true
-}
+# variable "NEXT_PUBLIC_APIURL" {
+#   type = string
+#   sensitive = true
+# }
 
 
 variable "CLIENT_URL" {
