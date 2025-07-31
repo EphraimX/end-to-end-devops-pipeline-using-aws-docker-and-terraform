@@ -219,6 +219,19 @@ resource "aws_vpc_security_group_egress_rule" "alb_allow_all_traffic_ipv4" {
 }
 
 
+resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
+  subnet_id = aws_subnet.roi_calculator_public_subnet_one.id
+  key_name = "rayda-application"
+  associate_public_ip_address = true
+  private_ip = true
+  user_data = file("scripts/bastion-host.sh")
+  tags = var.tags
+}
+
+
 resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
   name       = "roi-calculator-rds-db-subnet-group"
   subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
