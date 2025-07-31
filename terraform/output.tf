@@ -5,12 +5,12 @@ output "aws_rds_address" {
 
 
 output "production_host_ip_private_subnet_one" {
-  depends_on = [aws_instance./scripts/production-host.sh]
-  value = aws_instance.roi_calculator_bastion_host_ec2_public_subnet_one.public_ip
+  depends_on = [aws_instance.roi_calculator_production_host_ec2_private_subnet_one]
+  value = aws_instance.roi_calculator_production_host_ec2_private_subnet_one.public_ip
 }
 
 
 output "production_host_ip_private_subnet_two" {
-  depends_on = [aws_instance.roi_calculator_bastion_host_ec2_public_subnet_one]
-  value = aws_instance.roi_calculator_bastion_host_ec2_public_subnet_one.public_ip
+  depends_on = [aws_instance.roi_calculator_production_host_ec2_private_subnet_two]
+  value = aws_instance.roi_calculator_production_host_ec2_private_subnet_two.public_ip
 }
