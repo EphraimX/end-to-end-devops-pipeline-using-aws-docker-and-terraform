@@ -84,7 +84,7 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_grafana_sg_ingres
 }
 
 
-resource "aws_vpc_security_group_ingress_rule" "roi_calculator_ssh_ingress" {
+resource "aws_vpc_security_group_ingress_rule" "roi_calculator_bastion_ssh_ingress" {
   security_group_id = aws_security_group.roi_calculator_bastion_host_sg.id
   description = "ssh"
   cidr_ipv4         = "0.0.0.0/0"   # Open to the world – for production, restrict this!
@@ -105,6 +105,16 @@ resource "aws_security_group" "roi_calculator_production_host_sg" {
   name = "roi-calculator-production-host-sg"
   vpc_id = aws_vpc.roi_calculator_vpc.id
   tags = var.tags
+}
+
+
+resource "aws_vpc_security_group_ingress_rule" "roi_calculator_production_ssh_ingress" {
+  security_group_id = aws_security_group.roi_calculator_production_host_sg.id
+  description = "ssh"
+  cidr_ipv4         = aws_vpc.roi_calculator_vpc.cidr_block   # Open to the world – for production, restrict this!
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
 }
 
 
@@ -249,14 +259,14 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.roi_calculator_vpc.cidr_block]
+    cidr_blocks = [aws_subnet.roi_calculator_private_subnet_one.cidr_block, aws_subnet.roi_calculator_private_subnet_two.cidr_block]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.roi_calculator_vpc.cidr_block]
+    cidr_blocks = [aws_subnet.roi_calculator_private_subnet_one.cidr_block, aws_subnet.roi_calculator_private_subnet_two.cidr_block]
   }
 }
 
