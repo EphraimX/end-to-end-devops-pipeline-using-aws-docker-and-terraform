@@ -94,7 +94,7 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_ssh_ingress" {
 }
 
 
-resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+resource "aws_vpc_security_group_egress_rule" "bastion_host_allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.roi_calculator_bastion_host_sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
@@ -178,7 +178,45 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_node_exporter_sg_
 }
 
 
+resource "aws_vpc_security_group_egress_rule" "production_host_allow_all_traffic_ipv4" {
+  security_group_id = aws_security_group.roi_calculator_production_host_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
 
+
+resource "aws_security_group" "roi_calculator_alb_sg" {
+  name = "roi-calculator-alb-sg"
+  vpc_id = aws_vpc.roi_calculator_vpc.id
+  tags = var.tags
+}
+
+
+resource "aws_vpc_security_group_ingress_rule" "roi_calculator_alb_sg_http" {
+  security_group_id = aws_security_group.roi_calculator_alb_sg.id
+  description = "alb_http"
+  cidr_ipv4 = "0.0.0.0/0"
+  from_port = 80
+  to_port = 80
+  ip_protocol = "tcp"
+}
+
+
+resource "aws_vpc_security_group_ingress_rule" "roi_calculator_alb_sg_https" {
+  security_group_id = aws_security_group.roi_calculator_alb_sg.id
+  description = "alb_https"
+  cidr_ipv4 = "0.0.0.0/0"
+  from_port = 443
+  to_port = 443
+  ip_protocol = "tcp"
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "alb_allow_all_traffic_ipv4" {
+  security_group_id = aws_security_group.roi_calculator_alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
 
 
 resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
@@ -186,6 +224,7 @@ resource "aws_db_subnet_group" "roi_calculator_rds_db_subnet_group" {
   subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
   tags = var.tags
 }
+
 
 resource "aws_security_group" "rds_sg" {
   name        = "rds-sg"
@@ -223,4 +262,36 @@ resource "aws_db_instance" "roi_calculator" {
   publicly_accessible = false
   db_subnet_group_name = aws_db_subnet_group.roi_calculator_rds_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
+}
+
+
+resource "aws_lb" "roi_calculator_aws_lb" {
+  name               = "roi-calculator-aws-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.roi_calculator_alb_sg.id]
+  subnets            = [aws_subnet.roi_calculator_public_subnet_one.id, aws_subnet.roi_calculator_public_subnet_two.id]
+
+  tags = var.tags
+}
+
+
+resource "aws_lb_target_group" "roi_calculator_aws_lb_target_group" {
+  name     = "roi-calculator-aws-lb-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.roi_calculator_vpc.id
+}
+
+
+resource "aws_lb_listener" "roi_calculator_alb_sg_listener" {
+
+  load_balancer_arn = aws_lb.roi_calculator_aws_lb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.roi_calculator_aws_lb_target_group.arn
+  }
 }
