@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 sudo apt update
 sudo apt install -y unzip curl
 
@@ -18,13 +21,13 @@ MY_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
 # Set environment variables
 # export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
 export NEXT_PUBLIC_APIURL="http://${MY_IP}:8000/api"
-export DB_HOST="__db_host__"
-export DB_PORT="__db_port__"
-export DB_NAME="__db_name__"
-export DB_USER="__db_user__"
-export DB_PASSWORD="__db_password__"
-export DB_TYPE="__db_type__"
-export CLIENT_URL="__client_url__"
+export DB_HOST="${db_host}"
+export DB_PORT="${db_port}"
+export DB_NAME="${db_name}"
+export DB_USER="${db_user}"
+export DB_PASSWORD="${db_password}"
+export DB_TYPE="${db_type}"
+export CLIENT_URL="${client_url}"
 
 echo "NEXT_PUBLIC_APIURL=http://${MY_IP}:8000/api" >> /etc/environment
 echo "DB_HOST=$DB_HOST"

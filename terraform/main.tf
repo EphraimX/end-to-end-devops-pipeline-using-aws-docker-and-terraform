@@ -82,22 +82,73 @@ resource "aws_route_table_association" "roi_calculator_route_table_association_p
 }
 
 
-#################################################
-## EIP, NAT Gateway, Route Tables - Private Subnet 
-#################################################
+#############################################################
+## EIP, NAT Gateway, Route Tables - Private Subnet One
+#########################################################
 
 
-resource "aws_eip" "roi_calculator_ngw_eip" {
+resource "aws_eip" "roi_calculator_ngw_eip_private_subnet_one" {
   domain = "vpc"
   tags = var.tags
 }
 
 
-resource "aws_nat_gateway" "roi_calculator_ngw_private_subnet_one " {
-  subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
-  allocation_id = aws_eip.roi_calculator_ngw_eip.id
+resource "aws_nat_gateway" "roi_calculator_ngw_private_subnet_one" {
+  subnet_id = aws_subnet.roi_calculator_public_subnet_one.id
+  allocation_id = aws_eip.roi_calculator_ngw_eip_private_subnet_one.id
   tags = var.tags
   depends_on = [ aws_internet_gateway.roi_calculator_igw ]
+}
+
+
+resource "aws_route_table" "roi_calculator_route_table_private_subnet_one" {
+  vpc_id = aws_vpc.roi_calculator_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.roi_calculator_ngw_private_subnet_one.id
+  }
+  tags = var.tags
+}
+
+
+resource "aws_route_table_association" "roi_calculator_route_table_association_private_subnet_one" {
+  subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
+  route_table_id = aws_route_table.roi_calculator_route_table_private_subnet_one.id
+}
+
+
+#############################################################
+## EIP, NAT Gateway, Route Tables - Private Subnet Two
+#########################################################
+
+
+resource "aws_eip" "roi_calculator_ngw_eip_private_subnet_two" {
+  domain = "vpc"
+  tags = var.tags
+}
+
+
+resource "aws_nat_gateway" "roi_calculator_ngw_private_subnet_two" {
+  subnet_id = aws_subnet.roi_calculator_public_subnet_two.id
+  allocation_id = aws_eip.roi_calculator_ngw_eip_private_subnet_two.id
+  tags = var.tags
+  depends_on = [ aws_internet_gateway.roi_calculator_igw ]
+}
+
+
+resource "aws_route_table" "roi_calculator_route_table_private_subnet_two" {
+  vpc_id = aws_vpc.roi_calculator_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.roi_calculator_ngw_private_subnet_two.id
+  }
+  tags = var.tags
+}
+
+
+resource "aws_route_table_association" "roi_calculator_route_table_association_private_subnet_two" {
+  subnet_id = aws_subnet.roi_calculator_private_subnet_two.id
+  route_table_id = aws_route_table.roi_calculator_route_table_private_subnet_two.id
 }
 
 
@@ -317,7 +368,7 @@ resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_one" 
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
   key_name = "rayda-application"
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   user_data = templatefile("${path.module}/scripts/production-host.sh", {
     db_host            = aws_db_instance.roi_calculator.address
     db_port            = var.DB_PORT
@@ -338,7 +389,7 @@ resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_two" 
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_two.id
   key_name = "rayda-application"
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   user_data = templatefile("${path.module}/scripts/production-host.sh", {
     db_host            = aws_db_instance.roi_calculator.address
     db_port            = var.DB_PORT
