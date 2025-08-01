@@ -56,15 +56,15 @@ cd roi-calculator
 
 # Frontend
 cd client-side
-docker build \
+sudo docker build \
   -f Dockerfile.dev \
   --build-arg NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL \
   -t roi-calculator-frontend .
-docker run -d -p 80:3000 roi-calculator-frontend
+sudo docker run -d -p 80:3000 roi-calculator-frontend
 
 # Backend
 cd ../server-side
-docker run -d \
+sudo docker run -d \
   --name roi-calculator-backend \
   -e DB_HOST=$DB_HOST \
   -e DB_PORT=$DB_PORT \
@@ -78,4 +78,4 @@ docker run -d \
 
 # Monitoring
 cd ../monitoring
-docker compose -f monitoring-docker-compose.yml up -d prometheus cadvisor node_exporter
+sudo docker compose -f monitoring-docker-compose.yml up -d prometheus cadvisor node_exporter
