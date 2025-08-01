@@ -48,7 +48,7 @@ sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/u
 sudo apt update -y
 sudo apt install -y docker-ce
 sudo systemctl is-active --quiet docker && echo "Docker is running" || echo "Docker is not running"
-sudo usermod -aG docker $USER
+sudo usermod -aG docker ubuntu
 
 # Clone repo
 git clone https://github.com/EphraimX/roi-calculator.git
