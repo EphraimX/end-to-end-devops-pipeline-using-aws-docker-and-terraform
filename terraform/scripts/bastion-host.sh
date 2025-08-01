@@ -27,7 +27,7 @@ sudo apt install -y docker-ce
 sudo systemctl is-active --quiet docker && echo "Docker is running" || echo "Docker is not running"
 
 # Allow current user to run Docker without sudo
-sudo usermod -aG docker $USER
+sudo usermod -aG docker ubuntu
 
 # Clone your repo
 git clone https://github.com/EphraimX/roi-calculator.git

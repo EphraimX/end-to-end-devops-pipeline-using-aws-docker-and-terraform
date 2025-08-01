@@ -41,7 +41,7 @@ resource "aws_subnet" "roi_calculator_private_subnet_two" {
 
 
 #################################################
-## Internet Gateway and Route Tables
+## Internet Gateway and Route Tables - Public 
 #################################################
 
 
@@ -51,6 +51,7 @@ resource "aws_internet_gateway" "roi_calculator_igw" {
 }
 
 
+# Duplicate
 # resource "aws_internet_gateway_attachment" "roi_calculator_igw_attachment" {
 #   internet_gateway_id = aws_internet_gateway.roi_calculator_igw.id
 #   vpc_id = aws_vpc.roi_calculator_vpc.id
@@ -78,6 +79,25 @@ resource "aws_route_table_association" "roi_calculator_route_table_association_p
 resource "aws_route_table_association" "roi_calculator_route_table_association_public_subnet_two" {
   route_table_id = aws_route_table.roi_calculator_route_table.id
   subnet_id = aws_subnet.roi_calculator_public_subnet_two.id
+}
+
+
+#################################################
+## EIP, NAT Gateway, Route Tables - Private Subnet 
+#################################################
+
+
+resource "aws_eip" "roi_calculator_ngw_eip" {
+  domain = "vpc"
+  tags = var.tags
+}
+
+
+resource "aws_nat_gateway" "roi_calculator_ngw_private_subnet_one " {
+  subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
+  allocation_id = aws_eip.roi_calculator_ngw_eip.id
+  tags = var.tags
+  depends_on = [ aws_internet_gateway.roi_calculator_igw ]
 }
 
 
