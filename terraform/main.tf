@@ -335,7 +335,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_allow_all_traffic_ipv4" {
 
 resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.2xlarge"
+  instance_type = "t3.xlarge"
   vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_public_subnet_one.id
   key_name = "rayda-application"
@@ -347,7 +347,7 @@ resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_one" {
 
 resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_two" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.2xlarge"
+  instance_type = "t3.xlarge"
   vpc_security_group_ids = [aws_security_group.roi_calculator_bastion_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_public_subnet_two.id
   key_name = "rayda-application"
@@ -364,7 +364,7 @@ resource "aws_instance" "roi_calculator_bastion_host_ec2_public_subnet_two" {
 
 resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_one" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.2xlarge"
+  instance_type = "t3.xlarge"
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_one.id
   key_name = "rayda-application"
@@ -385,7 +385,7 @@ resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_one" 
 
 resource "aws_instance" "roi_calculator_production_host_ec2_private_subnet_two" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.2xlarge"
+  instance_type = "t3.xlarge"
   vpc_security_group_ids = [aws_security_group.roi_calculator_production_host_sg.id]
   subnet_id = aws_subnet.roi_calculator_private_subnet_two.id
   key_name = "rayda-application"
