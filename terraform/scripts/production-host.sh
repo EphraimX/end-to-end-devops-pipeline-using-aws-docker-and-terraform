@@ -20,7 +20,9 @@ MY_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
 
 # Set environment variables
 # export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
-export NEXT_PUBLIC_APIURL="http://${MY_IP}:8000/api"
+export NEXT_PUBLIC_APIURL="http://$(curl -H "X-aws-ec2-metadata-token: $(curl -X PUT http://169.254.169.254/latest/api/token \
+                                                                              -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")" \
+                                                                              http://169.254.169.254/latest/meta-data/local-ipv4):8000/api"
 export DB_HOST="${db_host}"
 export DB_PORT="${db_port}"
 export DB_NAME="${db_name}"
