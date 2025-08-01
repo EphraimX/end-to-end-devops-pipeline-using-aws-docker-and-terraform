@@ -214,7 +214,7 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_production_ssh_in
 
 resource "aws_vpc_security_group_ingress_rule" "roi_calculator_http_sg_ingress" {
   security_group_id = aws_security_group.roi_calculator_production_host_sg.id
-  description = "http"
+  description = "http-and-also-for-next-js"
   cidr_ipv4 = aws_vpc.roi_calculator_vpc.cidr_block
   from_port = 80
   to_port = 80

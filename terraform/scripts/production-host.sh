@@ -54,8 +54,11 @@ cd roi-calculator
 
 # Frontend
 cd client-side
-docker build --build-arg NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL -t roi-calculator-frontend .
-docker run -d -p 8080:80 roi-calculator-frontend
+docker build \
+  -f Dockerfile.dev \
+  --build-arg NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL \
+  -t roi-calculator-frontend 
+docker run -d -p 80:3000 roi-calculator-frontend
 
 # Backend
 cd ../server-side
