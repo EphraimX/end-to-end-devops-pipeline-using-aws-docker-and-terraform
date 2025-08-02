@@ -11,18 +11,18 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 # Step 1: Request a metadata session token (valid for 6 hours)
-TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
-  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+# TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+#   -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
-# Step 2: Use that token to securely access instance metadata
-MY_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
-  http://169.254.169.254/latest/meta-data/local-ipv4)
+# # Step 2: Use that token to securely access instance metadata
+# MY_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+#   http://169.254.169.254/latest/meta-data/local-ipv4)
 
-# Set environment variables
-# export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
-export NEXT_PUBLIC_APIURL="http://$(curl -H "X-aws-ec2-metadata-token: $(curl -X PUT http://169.254.169.254/latest/api/token \
-                                                                              -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")" \
-                                                                              http://169.254.169.254/latest/meta-data/local-ipv4):8000/api"
+# # Set environment variables
+# # export NEXT_PUBLIC_APIURL="__next_public_apiurl__"
+# export NEXT_PUBLIC_APIURL="http://$(curl -H "X-aws-ec2-metadata-token: $(curl -X PUT http://169.254.169.254/latest/api/token \
+#                                                                               -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")" \
+#                                                                               http://169.254.169.254/latest/meta-data/local-ipv4):8000/api"
 export DB_HOST="${db_host}"
 export DB_PORT="${db_port}"
 export DB_NAME="${db_name}"
@@ -31,7 +31,7 @@ export DB_PASSWORD="${db_password}"
 export DB_TYPE="${db_type}"
 export CLIENT_URL="${client_url}"
 
-echo "NEXT_PUBLIC_APIURL=http://${MY_IP}:8000/api" >> /etc/environment
+# echo "NEXT_PUBLIC_APIURL=http://${MY_IP}:8000/api" >> /etc/environment
 echo "DB_HOST=$DB_HOST"
 echo "DB_PORT=$DB_PORT"
 echo "DB_NAME=$DB_NAME"
@@ -54,18 +54,23 @@ sudo usermod -aG docker ubuntu
 git clone https://github.com/EphraimX/roi-calculator.git
 cd roi-calculator
 
+
+# Create Docker Network
+sudo docker network create roi-calculator-network
+
 # Frontend
 cd client-side
 sudo docker build \
   -f Dockerfile.dev \
-  --build-arg NEXT_PUBLIC_APIURL=$NEXT_PUBLIC_APIURL \
+  --build-arg NEXT_PUBLIC_APIURL=http://roi-calculator-backend:8000/api \
   -t roi-calculator-frontend .
-sudo docker run -d -p 80:3000 roi-calculator-frontend
+sudo docker run -d --name roi-calculator-frontend --network roi-calculator-network -p 80:3000 roi-calculator-frontend
 
 # Backend
 cd ../server-side
 sudo docker run -d \
   --name roi-calculator-backend \
+  --network roi-calculator-network \
   -e DB_HOST=$DB_HOST \
   -e DB_PORT=$DB_PORT \
   -e DB_NAME=$DB_NAME \
