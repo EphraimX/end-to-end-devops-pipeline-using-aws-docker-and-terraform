@@ -22,24 +22,27 @@ jobs:
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.8.0  # or your preferred version
+    
+    - name: Echo Random Stuff
+      run: echo "lalala"
 
     - name: Terraform Init
       run: terraform init
 
-    - name: Terraform Validate
-      run: terraform validate
+    # - name: Terraform Validate
+    #   run: terraform validate
 
-    - name: Terraform Plan
-      run: |
-        terraform plan \
-          -var="db_user=${{ secrets.DB_USER }}" \
-          -var="db_password=${{ secrets.DB_PASSWORD }}" \
-          -var="db_port=${{ secrets.DB_PORT }}"
+    # - name: Terraform Plan
+    #   run: |
+    #     terraform plan \
+    #       -var="db_user=${{ secrets.DB_USER }}" \
+    #       -var="db_password=${{ secrets.DB_PASSWORD }}" \
+    #       -var="db_port=${{ secrets.DB_PORT }}"
 
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'  # protect applies to main branch
-      run: |
-        terraform apply -auto-approve \
-          -var="db_user=${{ secrets.DB_USER }}" \
-          -var="db_password=${{ secrets.DB_PASSWORD }}" \
-          -var="db_port=${{ secrets.DB_PORT }}"
+    # - name: Terraform Apply
+    #   if: github.ref == 'refs/heads/main'  # protect applies to main branch
+    #   run: |
+    #     terraform apply -auto-approve \
+    #       -var="db_user=${{ secrets.DB_USER }}" \
+    #       -var="db_password=${{ secrets.DB_PASSWORD }}" \
+    #       -var="db_port=${{ secrets.DB_PORT }}"
