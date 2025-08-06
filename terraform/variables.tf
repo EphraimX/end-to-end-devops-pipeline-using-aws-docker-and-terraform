@@ -20,13 +20,6 @@ variable "tags" {
   }
 }
 
-
-# variable "DB_HOST" {
-#   type = string
-#   sensitive = true
-# }
-
-
 variable "DB_PORT" {
   type = number
   sensitive = true
