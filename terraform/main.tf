@@ -51,13 +51,6 @@ resource "aws_internet_gateway" "roi_calculator_igw" {
 }
 
 
-# Duplicate
-# resource "aws_internet_gateway_attachment" "roi_calculator_igw_attachment" {
-#   internet_gateway_id = aws_internet_gateway.roi_calculator_igw.id
-#   vpc_id = aws_vpc.roi_calculator_vpc.id
-# }
-
-
 resource "aws_route_table" "roi_calculator_route_table" {
   vpc_id = aws_vpc.roi_calculator_vpc.id
 
