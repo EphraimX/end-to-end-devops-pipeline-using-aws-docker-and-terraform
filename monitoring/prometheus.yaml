@@ -17,13 +17,4 @@ scrape_configs:
   # Monitor All Docker Containers
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['cadvisor:8081']
-  
-  # Monitoring NGINX - Client Server
-  - job_name: 'roi-calculator-client-side'
-    static_configs:
-      - targets: ['10.124.32.32:80'] # Replace your EC2 IP
-
-  - job_name: 'roi-calculator-backend-side'
-    static_configs:
-      - targets: ['10.124.32.32:8000'] 
+      - targets: ['cadvisor:8080']
