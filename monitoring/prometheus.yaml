@@ -17,4 +17,4 @@ scrape_configs:
   # Monitor All Docker Containers
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['cadvisor:8080']
+      - targets: ['cadvisor:8085']
