@@ -269,8 +269,8 @@ resource "aws_vpc_security_group_ingress_rule" "roi_calculator_node_exporter_sg_
   security_group_id = aws_security_group.roi_calculator_production_host_sg.id
   description = "node_exporter"
   cidr_ipv4 = aws_vpc.roi_calculator_vpc.cidr_block
-  from_port = 9113
-  to_port = 9113
+  from_port = 9100
+  to_port = 9100
   ip_protocol = "tcp"
 }
 
