@@ -16,7 +16,8 @@ The application includes a backend, frontend, and monitoring stack. The deployme
 
 ## Infrastructure
 
-![Architecture Diagram](https://imgur.com/NM7WIrC.jpeg)
+<img width="2220" height="1140" alt="AWS Architectural Diagrams - API Gateway, Kubernetes, Docker, Docker Compose, Premethues, Grafana (1)" src="https://github.com/user-attachments/assets/ae15d3bb-80cf-4eec-bf21-91b005290067" />
+
 
 The architecture includes a VPC with public and private subnets, an internet gateway, NAT gateway, route tables, and security groups. ECS is used to run Docker containers. A bastion host is used to SSH into private instances.
 
