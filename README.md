@@ -16,7 +16,7 @@ The application includes a backend, frontend, and monitoring stack. The deployme
 
 ## Infrastructure
 
-![Architecture Diagram]()
+![Architecture Diagram](https://imgur.com/NM7WIrC.jpeg)
 
 The architecture includes a VPC with public and private subnets, an internet gateway, NAT gateway, route tables, and security groups. ECS is used to run Docker containers. A bastion host is used to SSH into private instances.
 
